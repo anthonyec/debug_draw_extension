@@ -8,7 +8,12 @@ function zip(arrA = [], arrB = []) {
   // Intentionally not using reduce ;--)
   arrA.forEach((value, index) => {
     const key = arrB[index];
-    props[key] = value;
+
+    // Only zip if there's a value. Otherwise it will zip undefined stuff.
+    // TODO: Should this be here? I think it should...
+    if (value) {
+      props[key] = value;
+    }
   });
 
   return props;
@@ -57,7 +62,7 @@ registerDebugMethod('drawRect', {
   y: 0,
   width: 0,
   height: 0,
-  color: 'white'
+  color: 'red'
 }, ({ context, x, y, width, height, color }) => {
   context.beginPath();
   context.strokeStyle = color;
@@ -70,7 +75,7 @@ registerDebugMethod('drawLine', {
   y1: 0,
   x2: 0,
   y2: 0,
-  color: 'white'
+  color: 'red',
 }, ({ context, x1, y1, x2, y2, color }) => {
   context.strokeStyle = color;
   context.beginPath();
@@ -83,12 +88,50 @@ registerDebugMethod('drawCircle', {
   x: 0,
   y: 0,
   radius: 0,
-  color: 'white'
+  color: 'red'
 }, ({ context, x, y, radius, color }) => {
   context.beginPath();
   context.strokeStyle = color;
   context.arc(x, y, radius, 0, 2 * Math.PI);
   context.stroke();
+});
+
+registerDebugMethod('drawText', {
+  x: 0,
+  y: 0,
+  text: '',
+  color: 'red',
+  fontSize: 20
+}, ({ context, x: originalX, y: originalY, text, color, fontSize }) => {
+  let x = originalX;
+  let y = originalY;
+
+  context.textBaseline = 'top';
+  context.font = `${fontSize}px Arial`;
+
+  const textMetrics = context.measureText(text);
+
+  context.beginPath();
+    context.lineWidth = 5;
+    context.strokeStyle = color;
+    context.moveTo(
+      x - textMetrics.actualBoundingBoxLeft,
+      y - textMetrics.actualBoundingBoxAscent
+    );
+    context.lineTo(
+      x + textMetrics.actualBoundingBoxRight,
+      y - textMetrics.actualBoundingBoxAscent
+    );
+    context.lineTo(
+      x + textMetrics.actualBoundingBoxRight,
+      y + textMetrics.actualBoundingBoxDescent
+    );
+    context.lineTo(
+      x - textMetrics.actualBoundingBoxLeft,
+      y + textMetrics.actualBoundingBoxDescent
+    );
+    context.closePath();
+    context.fillText(text, x, y);
 });
 
 /*
@@ -147,6 +190,8 @@ function main() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     SCENE.forEach((node) => {
+      context.save();
+
       const propsWithScrollPosition = getPropsWithScrollPosition(
         node.props,
         window.scrollX,
@@ -154,6 +199,8 @@ function main() {
       );
 
       node.draw({ context, ...propsWithScrollPosition });
+
+      context.restore();
     });
 
     window.requestAnimationFrame(draw);
@@ -166,7 +213,9 @@ function main() {
 
     if (method) {
       const zippedProps = zip(evt.detail.args, Object.keys(method.props));
-      SCENE.push({ name: method.name, draw: method.draw, props: zippedProps });
+      const props = { ...method.props, ...zippedProps };
+
+      SCENE.push({ name: method.name, draw: method.draw, props });
     }
   }, false);
 }
