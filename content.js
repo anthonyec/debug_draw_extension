@@ -41,16 +41,6 @@ function getPropsWithScrollPosition(props, scrollX, scrollY) {
   }
 }
 
-// TODO: This is nasty! Only works for certain functions make in a certain way.
-function getFunctionBody(string = '') {
-  const firstDelimiter = '=> {';
-
-  return string.substring(
-    string.indexOf(firstDelimiter) + firstDelimiter.length,
-    string.lastIndexOf('}')
-  );
-}
-
 function getConcatenatedPropKeys(props = {}) {
   return Object.keys(props).join(', ');
 }
