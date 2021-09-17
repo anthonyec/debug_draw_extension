@@ -80,38 +80,6 @@ function registerDrawMethod(name = '', props = {}, draw = () => {}) {
   DRAW_METHODS[name + 'WithId'] = drawWithIdMethod;
 }
 
-function registerHelperMethod(name = '', props = {}, helper = () => {}) {
-  const concatenatedPropKeys = getConcatenatedPropKeys(props);
-  const helperFunctionBodyAsString = getFunctionBody(helper.toString());
-
-  const windowAPIString = `${name}: (${concatenatedPropKeys}) => { ${helperFunctionBodyAsString} }`;
-
-  WINDOW_API_STRINGS.push(windowAPIString);
-  // TODO: Add it to helper methods here.
-}
-
-registerHelperMethod('getTransformOrigin', {
-  // TODO: Add window pass through here.
-  selector: ''
-}, ({ selector }) => {
-  if (typeof window === 'undefined' || !selector) {
-    return;
-  }
-
-  const element = window.document.querySelector(selector);
-
-  if (!element) {
-    return;
-  }
-
-  const computerTransformOrigin = window.getComputedStyle(element).transformOrigin;
-  const transformOriginStringComponents = computerTransformOrigin.split(' ');
-  const x = parseFloat(transformOriginStringComponents[0]);
-  const y = parseFloat(transformOriginStringComponents[1]);
-
-  return [x, y];
-});
-
 registerDrawMethod('drawPoint', {
   x: 0,
   y: 0,
@@ -304,9 +272,9 @@ function main() {
           SCENE[foundSceneEntityIndex].props = props;
           return;
         }
-
-        SCENE.push({ id: Math.floor(Math.random() * 999) + '' + Date.now(), name: method.name, draw: method.draw, props });
       }
+
+      SCENE.push({ id: Math.floor(Math.random() * 999) + '' + Date.now(), name: method.name, draw: method.draw, props });
     }
   }, false);
 }
