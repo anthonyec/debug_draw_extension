@@ -41,11 +41,21 @@ function getPropsWithScrollPosition(props, scrollX, scrollY) {
   }
 }
 
+// TODO: This is nasty! Only works for certain functions make in a certain way.
+function getFunctionBody(string = '') {
+  const firstDelimiter = '=> {';
+
+  return string.substring(
+    string.indexOf(firstDelimiter) + firstDelimiter.length,
+    string.lastIndexOf('}')
+  );
+}
+
 function getConcatenatedPropKeys(props = {}) {
   return Object.keys(props).join(', ');
 }
 
-function registerDebugMethod(name = '', props = {}, draw = () => {}) {
+function registerDrawMethod(name = '', props = {}, draw = () => {}) {
   const concatenatedPropKeys = getConcatenatedPropKeys(props);
   const windowAPIString = `${name}: (${concatenatedPropKeys}) => dispatchExtensionMethod('DebugDraw', '${name}', ${concatenatedPropKeys})`;
 
@@ -57,7 +67,17 @@ function registerDebugMethod(name = '', props = {}, draw = () => {}) {
   };
 }
 
-registerDebugMethod('drawRect', {
+function registerHelperMethod(name = '', props = {}, helper = () => {}) {
+  const concatenatedPropKeys = getConcatenatedPropKeys(props);
+  const helperFunctionBodyAsString = getFunctionBody(helper.toString());
+
+  const windowAPIString = `${name}: (${concatenatedPropKeys}) => { ${helperFunctionBodyAsString} }`;
+
+  WINDOW_API_STRINGS.push(windowAPIString);
+  // TODO: Add it to helper methods here.
+}
+
+registerDrawMethod('drawRect', {
   x: 0,
   y: 0,
   width: 0,
@@ -70,7 +90,7 @@ registerDebugMethod('drawRect', {
   context.stroke();
 });
 
-registerDebugMethod('drawLine', {
+registerDrawMethod('drawLine', {
   x1: 0,
   y1: 0,
   x2: 0,
@@ -84,7 +104,7 @@ registerDebugMethod('drawLine', {
   context.stroke();
 });
 
-registerDebugMethod('drawCircle', {
+registerDrawMethod('drawCircle', {
   x: 0,
   y: 0,
   radius: 0,
@@ -96,7 +116,7 @@ registerDebugMethod('drawCircle', {
   context.stroke();
 });
 
-registerDebugMethod('drawText', {
+registerDrawMethod('drawText', {
   x: 0,
   y: 0,
   text: '',
