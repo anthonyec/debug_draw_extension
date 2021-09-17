@@ -139,36 +139,11 @@ registerDrawMethod('drawText', {
   text: '',
   color: 'red',
   fontSize: 16
-}, ({ context, x: originalX, y: originalY, text, color, fontSize }) => {
-  let x = originalX;
-  let y = originalY;
-
+}, ({ context, x, y, text, color, fontSize }) => {
   context.textBaseline = 'top';
   context.font = `${fontSize}px Arial`;
-
-  const textMetrics = context.measureText(text);
-
-  context.beginPath();
-    context.lineWidth = 5;
-    context.fillStyle = color;
-    context.moveTo(
-      x - textMetrics.actualBoundingBoxLeft,
-      y - textMetrics.actualBoundingBoxAscent
-    );
-    context.lineTo(
-      x + textMetrics.actualBoundingBoxRight,
-      y - textMetrics.actualBoundingBoxAscent
-    );
-    context.lineTo(
-      x + textMetrics.actualBoundingBoxRight,
-      y + textMetrics.actualBoundingBoxDescent
-    );
-    context.lineTo(
-      x - textMetrics.actualBoundingBoxLeft,
-      y + textMetrics.actualBoundingBoxDescent
-    );
-    context.closePath();
-    context.fillText(text, x, y);
+  context.fillStyle = color;
+  context.fillText(text, x, y);
 });
 
 /*
