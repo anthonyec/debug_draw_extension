@@ -65,6 +65,19 @@ function registerDrawMethod(name = '', props = {}, draw = () => {}) {
     props,
     draw
   };
+
+  // TODO: Clean up.
+  const drawWithIdMethod = {
+    name: `${name}WithId`,
+    props: {
+      id: '',
+      ...props
+    },
+    draw: DRAW_METHODS[name]['draw']
+  };
+
+  WINDOW_API_STRINGS.push(`${name}WithId: (id, ${concatenatedPropKeys}) => dispatchExtensionMethod('DebugDraw', '${name}WithId', id, ${concatenatedPropKeys})`);
+  DRAW_METHODS[name + 'WithId'] = drawWithIdMethod;
 }
 
 function registerHelperMethod(name = '', props = {}, helper = () => {}) {
@@ -80,15 +93,24 @@ function registerHelperMethod(name = '', props = {}, helper = () => {}) {
 registerHelperMethod('getTransformOrigin', {
   // TODO: Add window pass through here.
   selector: ''
-}, ({ window, selector }) => {
+}, ({ selector }) => {
+  if (typeof window === 'undefined' || !selector) {
+    return;
+  }
+
   const element = window.document.querySelector(selector);
+
+  if (!element) {
+    return;
+  }
+
   const computerTransformOrigin = window.getComputedStyle(element).transformOrigin;
   const transformOriginStringComponents = computerTransformOrigin.split(' ');
   const x = parseFloat(transformOriginStringComponents[0]);
   const y = parseFloat(transformOriginStringComponents[1]);
 
   return [x, y];
-})
+});
 
 registerDrawMethod('drawPoint', {
   x: 0,
@@ -272,7 +294,19 @@ function main() {
       const zippedProps = zip(evt.detail.args, Object.keys(method.props));
       const props = { ...method.props, ...zippedProps };
 
-      SCENE.push({ name: method.name, draw: method.draw, props });
+      if (props.id) {
+        const foundSceneEntityIndex = SCENE.findIndex((sceneEntity) => {
+          return sceneEntity.props.id === props.id;
+        });
+
+        // TODO: Clean up with less nested if statements.
+        if (foundSceneEntityIndex !== -1) {
+          SCENE[foundSceneEntityIndex].props = props;
+          return;
+        }
+
+        SCENE.push({ id: Math.floor(Math.random() * 999) + '' + Date.now(), name: method.name, draw: method.draw, props });
+      }
     }
   }, false);
 }
