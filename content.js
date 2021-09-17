@@ -101,7 +101,7 @@ registerDebugMethod('drawText', {
   y: 0,
   text: '',
   color: 'red',
-  fontSize: 20
+  fontSize: 16
 }, ({ context, x: originalX, y: originalY, text, color, fontSize }) => {
   let x = originalX;
   let y = originalY;
@@ -113,7 +113,7 @@ registerDebugMethod('drawText', {
 
   context.beginPath();
     context.lineWidth = 5;
-    context.strokeStyle = color;
+    context.fillStyle = color;
     context.moveTo(
       x - textMetrics.actualBoundingBoxLeft,
       y - textMetrics.actualBoundingBoxAscent
