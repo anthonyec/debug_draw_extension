@@ -77,6 +77,43 @@ function registerHelperMethod(name = '', props = {}, helper = () => {}) {
   // TODO: Add it to helper methods here.
 }
 
+registerHelperMethod('getTransformOrigin', {
+  // TODO: Add window pass through here.
+  selector: ''
+}, ({ window, selector }) => {
+  const element = window.document.querySelector(selector);
+  const computerTransformOrigin = window.getComputedStyle(element).transformOrigin;
+  const transformOriginStringComponents = computerTransformOrigin.split(' ');
+  const x = parseFloat(transformOriginStringComponents[0]);
+  const y = parseFloat(transformOriginStringComponents[1]);
+
+  return [x, y];
+})
+
+registerDrawMethod('drawPoint', {
+  x: 0,
+  y: 0,
+  color: 'red'
+}, ({ context, x, y, color }) => {
+  const radius = 10;
+
+  context.strokeStyle = color;
+
+  context.beginPath();
+  context.moveTo(x, y - radius);
+  context.lineTo(x, y + radius);
+  context.stroke();
+
+  context.beginPath();
+  context.moveTo(x - radius, y);
+  context.lineTo(x + radius, y);
+  context.stroke();
+
+  context.beginPath();
+  context.arc(x, y, radius / 2, 0, 2 * Math.PI);
+  context.stroke();
+});
+
 registerDrawMethod('drawRect', {
   x: 0,
   y: 0,
